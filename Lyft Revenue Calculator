@@ -1,0 +1,48 @@
+def calculate_net_revenue_over_12_months(lyfts_take, match_rate, initial_rides, churn_rate_no_fail, churn_rate_fail, rider_cac, driver_cac, number_of_drivers_needed, driver_churn_rate, months=12):
+    monthly_rides = initial_rides
+    total_revenue = 0
+    total_rider_acquisition_cost = 0
+    total_driver_acquisition_cost = 0
+    
+    for month in range(months):
+        # Calculate successful rides and revenue
+        successful_rides = monthly_rides * match_rate
+        monthly_revenue = successful_rides * lyfts_take
+        total_revenue += monthly_revenue
+        
+        # Calculate rider churn and acquisition
+        failed_matches = monthly_rides - successful_rides
+        churned_riders = (monthly_rides * churn_rate_no_fail) + (failed_matches * (churn_rate_fail - churn_rate_no_fail))
+        new_riders_needed = max(0, churned_riders)
+        rider_acquisition_cost_month = new_riders_needed * rider_cac
+        total_rider_acquisition_cost += rider_acquisition_cost_month
+        
+        # Adjust monthly rides for next iteration
+        monthly_rides = monthly_rides - churned_riders + new_riders_needed
+        
+        # Calculate driver churn and acquisition
+        churned_drivers = number_of_drivers_needed * driver_churn_rate
+        driver_acquisition_cost_month = churned_drivers * driver_cac
+        total_driver_acquisition_cost += driver_acquisition_cost_month
+
+    net_revenue_after_acquisition_costs = total_revenue - (total_rider_acquisition_cost + total_driver_acquisition_cost)
+    
+    return total_revenue, total_rider_acquisition_cost, total_driver_acquisition_cost, net_revenue_after_acquisition_costs
+
+# Example usage
+total_revenue, total_rider_acquisition_cost, total_driver_acquisition_cost, net_revenue_after_acquisition_costs = calculate_net_revenue_over_12_months(
+    lyfts_take=3, 
+    match_rate=0.93, 
+    initial_rides=1000, 
+    churn_rate_no_fail=0.10, 
+    churn_rate_fail=0.33, 
+    rider_cac=15, # Assuming an average of $10-$20
+    driver_cac=500, 
+    number_of_drivers_needed=10, 
+    driver_churn_rate=0.05
+)
+
+print(f"Total Revenue: ${total_revenue}")
+print(f"Total Rider Acquisition Cost: ${total_rider_acquisition_cost}")
+print(f"Total Driver Acquisition Cost: ${total_driver_acquisition_cost}")
+print(f"Net Revenue after Acquisition Costs: ${net_revenue_after_acquisition_costs}")
